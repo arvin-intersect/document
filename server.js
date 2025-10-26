@@ -3,10 +3,12 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const path = require('path'); // <-- Added for serving static files
 require('dotenv').config();
 
 const app = express();
-const port = 3000;
+// Render provides a PORT environment variable. You should use it.
+const port = process.env.PORT || 3000;
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -15,6 +17,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.text({ type: 'text/html', limit: '10mb' }));
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 // HTML template wrapper
 const getDocumentTemplate = (content, logoBase64) => `
@@ -26,62 +32,48 @@ const getDocumentTemplate = (content, logoBase64) => `
 <title>AI Generated Document</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap');
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Source Sans 3', sans-serif; background: #f5f5f5; color: #323E46; line-height: 1.5; }
-
 .page { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; position: relative; overflow: hidden; page-break-after: always; }
 .page-content { padding: 15mm; }
-
 .cover-page { background: linear-gradient(135deg, #4F6373 0%, #323E46 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
 .logo { margin-bottom: -50px; height: 180px; }
 .logo img { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
 h1 { color: #ECEDF4; font-size: 54px; font-weight: 300; margin-bottom: 20px; }
 .subtitle { color: #B2BFCA; font-size: 22px; font-weight: 300; }
-
 h2 { color: #4F6373; font-size: 28px; font-weight: 600; margin-bottom: 16px; padding-bottom: 6px; position: relative; }
 h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 3px; background: #1FBCBC; }
-
 p { font-size: 14px; margin-bottom: 12px; color: #4F6373; }
-
 .section-box { background: #ECEDF4; padding: 14px; margin: 12px 0; }
-
 .industries { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
 .industry-card { background: linear-gradient(135deg, #ECEDF4 0%, #fff 100%); padding: 10px; border-left: 4px solid #1FBCBC; font-weight: 600; font-size: 13px; color: #323E46; }
-
 .profile-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
 .profile-item { padding: 10px; background: #ECEDF4; border-radius: 4px; }
 .profile-label { font-size: 11px; font-weight: 600; color: #788DA5; text-transform: uppercase; margin-bottom: 4px; }
 .profile-value { font-size: 14px; font-weight: 600; color: #323E46; }
-
 .pain-points, .solutions { list-style: none; margin: 10px 0; }
 .pain-points li, .solutions li { padding: 10px 12px 10px 36px; margin: 6px 0; background: #ECEDF4; position: relative; font-size: 13px; transform: skewX(-3deg); }
 .pain-points li > *, .solutions li > * { transform: skewX(3deg); display: inline-block; }
 .pain-points li::before { content: '✕'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%) skewX(3deg); color: #4F6373; font-weight: 700; font-size: 16px; }
 .solutions li::before { content: '✓'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%) skewX(3deg); color: #1FBCBC; font-weight: 700; font-size: 16px; }
-
 .personas-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
 .personas-table thead { background: #4F6373; color: white; }
 .personas-table th, .personas-table td { padding: 8px; text-align: left; }
 .personas-table td { border-bottom: 1px solid #B2BFCA; }
 .persona-role { color: #1FBCBC; font-weight: 700; }
-
 .snapshot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 8px 0; }
 .snapshot-card { background: linear-gradient(135deg, #4F6373 0%, #323E46 100%); padding: 14px; color: white; }
 .snapshot-attribute { font-size: 10px; font-weight: 600; color: #B2BFCA; text-transform: uppercase; margin-bottom: 4px; }
 .snapshot-value { font-size: 14px; font-weight: 700; color: #1FBCBC; }
-
 .cta-box { background: linear-gradient(135deg, #1FBCBC 0%, #4F6373 100%); padding: 20px; color: white; margin: 12px 0; }
 .cta-box h2 { font-size: 22px; margin-bottom: 10px; color: white; }
 .cta-box h2::after { display: none; }
 .cta-point { font-size: 13px; font-weight: 600; padding: 10px; margin-bottom: 6px; background: rgba(255,255,255,0.15); transform: skewX(-3deg); }
 .cta-point > * { transform: skewX(3deg); display: inline-block; }
-
 .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0; }
 .feature-card { background: #ECEDF4; padding: 12px; border-radius: 4px; border-left: 3px solid #1FBCBC; }
 .feature-title { font-weight: 700; color: #323E46; margin-bottom: 4px; font-size: 13px; }
 .feature-desc { font-size: 12px; color: #4F6373; }
-
 @media print { 
     body { background: white; }
     .page { margin: 0; box-shadow: none; page-break-after: always; }
@@ -101,7 +93,7 @@ app.post('/generate-html', async (req, res) => {
   if (!content) return res.status(400).send('No content provided.');
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
 You are an expert document designer. Convert the following raw content into a professional HTML body using ONLY the predefined CSS classes. Wrap skewed elements in <span>. Create max 2-3 pages.
