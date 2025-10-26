@@ -209,7 +209,7 @@ async function generateDocument() {
   btnText.innerHTML = '<div class="spinner"></div> Generating...';
 
   try {
-    const response = await fetch('http://localhost:3000/generate-html', {
+    const response = await fetch('/generate-html', { // <-- CORRECTED URL
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ async function generateDocument() {
     
   } catch (error) {
     console.error('Error:', error);
-    alert('Error generating document: ' + error.message + '\n\nMake sure your backend server is running on localhost:3000');
+    alert('Error generating document: ' + error.message);
   } finally {
     btn.disabled = false;
     btnText.innerHTML = 'Generate Document';
@@ -251,7 +251,7 @@ async function downloadPDF() {
   if (!generatedHtml) return;
 
   try {
-    const response = await fetch('http://localhost:3000/generate-pdf', {
+    const response = await fetch('/generate-pdf', { // <-- CORRECTED URL
       method: 'POST',
       headers: { 'Content-Type': 'text/html' },
       body: generatedHtml
