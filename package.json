@@ -1,19 +1,17 @@
 {
-  "name": "ai-document-generator-vercel",
+  "name": "pdf",
   "version": "1.0.0",
-  "description": "AI Document Generator for Vercel",
-  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["ai", "document", "generator", "gemini", "vercel"],
-  "author": "IntersectAI",
-  "license": "MIT",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "puppeteer": "^24.26.1"
   }
 }
