@@ -93,7 +93,7 @@ app.post('/generate-html', async (req, res) => {
   if (!content) return res.status(400).send('No content provided.');
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `
 You are an expert document designer. Convert the following raw content into a professional HTML body using ONLY the predefined CSS classes. Wrap skewed elements in <span>. Create max 2-3 pages.
