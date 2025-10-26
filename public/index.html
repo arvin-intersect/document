@@ -74,7 +74,7 @@
             Your Content
           </h2>
           <button 
-            onclick="loadExample()" 
+            id="loadExampleBtn"
             class="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-all duration-200 hover:scale-105"
           >
             Load Example
@@ -99,7 +99,6 @@ The AI will structure everything professionally!"
 
         <div class="mt-4">
           <button 
-            onclick="generateDocument()"
             id="generateBtn"
             class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-cyan-500/50"
           >
@@ -157,7 +156,7 @@ The AI will structure everything professionally!"
           </h2>
           <div id="previewActions" class="flex gap-2" style="display: none;">
             <button 
-              onclick="copyHtml()" 
+              id="copyHtmlBtn"
               class="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-all duration-200 flex items-center gap-1 hover:scale-105"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,7 +165,7 @@ The AI will structure everything professionally!"
               Copy HTML
             </button>
             <button 
-              onclick="openInNewTab()" 
+              id="openNewTabBtn"
               class="text-xs px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 rounded transition-all duration-200 flex items-center gap-1 hover:scale-105 shadow-lg"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,4 +179,212 @@ The AI will structure everything professionally!"
         <div id="previewContainer">
           <div class="flex flex-col items-center justify-center h-96 text-slate-500">
             <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-lg font-medium">Your generated document will appear here</p>
+            <p class="text-sm mt-2">Enter content and click Generate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="max-w-7xl mx-auto px-6 py-8 text-center text-slate-400 text-sm">
+  <p>Powered by <span class="text-cyan-400 font-semibold">Google Gemini AI</span> • Built with ❤️ by <span class="text-cyan-400 font-semibold">IntersectAI</span></p>
+  <p class="mt-2 text-xs">Transform raw content into professional documents instantly</p>
+</div>
+
+<script>
+let generatedHtml = '';
+
+const exampleContent = `Company: TechFlow Solutions
+Industry: SaaS B2B Analytics Platform
+Target: Mid-market companies (100-500 employees)
+
+Company Profile:
+- Annual Revenue: $10M-50M
+- Geography: North America, expanding to Europe
+- Current Stage: Series B funded, rapid growth phase
+- Employees: 150 team members across 3 offices
+
+Pain Points:
+- Manual data entry consuming 20+ hours per week
+- Customer data scattered across 5+ different tools
+- No real-time reporting or dashboards for executives
+- Sales team spending more time on admin than selling
+- Difficulty tracking customer engagement and journey
+- Inconsistent data quality and reporting standards
+
+Our Solution:
+- Cloud-based CRM with AI-powered automation
+- Unified customer data platform with single source of truth
+- Real-time analytics and predictive insights dashboard
+- Automated workflow triggers and smart notifications
+- Mobile-first design optimized for field sales teams
+- Enterprise-grade security and compliance (SOC2, GDPR)
+
+Key Features:
+- Natural language search across all customer data
+- Automated lead scoring using machine learning
+- Email integration with tracking and templates
+- Custom reporting dashboards with drag-and-drop
+- API integrations with 100+ existing tools
+- Advanced forecasting and pipeline analytics
+
+Target Industries:
+- Technology and SaaS companies
+- Professional services firms
+- E-commerce and retail
+- Financial services
+- Healthcare providers
+- Manufacturing and distribution
+
+Decision Makers:
+- VP of Sales Operations: Focus on productivity gains and ROI
+- Chief Technology Officer: Interested in integration capabilities and security
+- Sales Director: Wants better visibility into pipeline and team performance
+- CFO: Concerned with cost efficiency and measurable business impact
+
+Why They Choose Us:
+- 60% reduction in manual data entry time
+- 3-month average ROI with measurable productivity gains
+- White-glove onboarding and dedicated success manager
+- Flexible pricing that scales with company growth
+- 99.9% uptime SLA with 24/7 support
+- Proven track record with 500+ satisfied customers
+
+Key Metrics:
+- Implementation: 4-6 weeks full deployment
+- User Adoption: 95% within first month
+- ROI Timeline: Break-even at 3 months
+- Customer Satisfaction: 4.8/5 star rating
+- Data Migration: Zero downtime guaranteed`;
+
+function loadExample() {
+  document.getElementById('contentInput').value = exampleContent;
+  document.getElementById('contentInput').classList.add('fade-in');
+}
+
+async function generateDocument() {
+  const content = document.getElementById('contentInput').value.trim();
+  
+  if (!content) {
+    showNotification('⚠️ Please enter some content first!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  const btnText = document.getElementById('btnText');
+  const generateIcon = document.getElementById('generateIcon');
+  
+  // Disable button and show loading state
+  btn.disabled = true;
+  btnText.textContent = 'Generating...';
+  generateIcon.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    // Use relative path for Vercel deployment
+    const response = await fetch('/api/generate-html', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate document');
+    }
+
+    const data = await response.json();
+    generatedHtml = data.html;
+    
+    // Show preview with fade-in animation
+    document.getElementById('previewContainer').innerHTML = `
+      <div class="bg-white rounded-lg overflow-hidden shadow-2xl fade-in">
+        <iframe 
+          srcdoc="${data.html.replace(/"/g, '&quot;')}"
+          class="w-full h-[600px] border-0"
+          title="Document Preview"
+          sandbox="allow-same-origin allow-scripts"
+        ></iframe>
+      </div>
+    `;
+    
+    document.getElementById('previewActions').style.display = 'flex';
+    document.getElementById('previewActions').classList.add('fade-in');
+    
+    // Show success message
+    showNotification('✅ Document generated successfully!', 'success');
+    
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification('❌ Error: ' + error.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Generate Document';
+    generateIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>';
+  }
+}
+
+function copyHtml() {
+  navigator.clipboard.writeText(generatedHtml);
+  showNotification('📋 HTML copied to clipboard!', 'success');
+}
+
+function openInNewTab() {
+  const newWindow = window.open();
+  newWindow.document.write(generatedHtml);
+  newWindow.document.close();
+  showNotification('🚀 Document opened in new tab. Use Ctrl+P or Cmd+P to print/save as PDF!', 'info');
+}
+
+function showNotification(message, type) {
+  const colors = {
+    success: 'from-green-500 to-emerald-600',
+    error: 'from-red-500 to-rose-600',
+    info: 'from-cyan-500 to-blue-600'
+  };
+  
+  const notification = document.createElement('div');
+  notification.className = `fixed top-24 right-6 bg-gradient-to-r ${colors[type]} text-white px-6 py-3 rounded-lg shadow-2xl z-50 fade-in`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Event listeners - attach after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Load Example button
+  document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+  
+  // Generate button
+  document.getElementById('generateBtn').addEventListener('click', generateDocument);
+  
+  // Copy HTML button
+  document.getElementById('copyHtmlBtn').addEventListener('click', copyHtml);
+  
+  // Open in new tab button
+  document.getElementById('openNewTabBtn').addEventListener('click', openInNewTab);
+  
+  // Keyboard shortcut for generate (Ctrl+Enter or Cmd+Enter)
+  document.getElementById('contentInput').addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      generateDocument();
+    }
+  });
+});
+</script>
+
+</body>
+</html>
